@@ -1,0 +1,1 @@
+dataset_file_path = '../datasets/parallel-08.11.2020-Tr74K.si-en.si'
