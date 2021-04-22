@@ -27,7 +27,7 @@ def filter_by_syllables_per_word(sent_list, word_len_thresh, freq_thresh):
 
 
 def create_output_file(output_data, ending="", extension="txt"):
-    s = datetime.datetime.now().strftime("%d-%B-%Y-%I-%M-%S-%s-%p") + "_" + ending + "." + extension
+    s = datetime.datetime.now().strftime("%d-%B-%Y-%I-%M-%S-%f-%p") + "_" + ending + "." + extension
     with open(s, "w", encoding='utf8') as f:
         if type(output_data) == list:
             string_data = ""
