@@ -4,6 +4,9 @@ import json
 from cal_scores import words_in_sentence, dataset_file_path, is_sinhala_word, word_length
 
 MAX_NO_PHRASES_IN_SENT = 1
+SENTENCE_LEN_THRESHOLD = 25
+SPW_THRESH = 5
+SPW_IN_SENT_THRESH = 7
 
 
 # cluttered sentences contain phrases connected by commas
@@ -15,7 +18,7 @@ def filter_long_sentences(sent_list, threshold):
     result = []
     for sent in sent_list:
         sent = sent.strip().replace('\u200d', '')
-        if words_in_sentence(sent) > threshold and not is_cluttered_sent(sent):
+        if words_in_sentence(sent) > threshold and (not is_cluttered_sent(sent)):
             result.append(sent)
     return result
 
@@ -50,10 +53,6 @@ def create_output_file(output_data, ending="", extension="txt"):
 
 
 if __name__ == '__main__':
-    SENTENCE_LEN_THRESHOLD = 25
-    SPW_THRESH = 5
-    SPW_IN_SENT_THRESH = 7
-
     file_data = open(dataset_file_path)
     data = file_data.readlines()
     print("Number of all sentences: ", len(data))
