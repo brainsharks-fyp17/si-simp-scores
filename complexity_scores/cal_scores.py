@@ -8,6 +8,7 @@ sinhala_start = 3456
 vowels_and_const_end = 3527
 sinhala_end = 3573
 dataset_file_path = '../datasets/parallel-08.11.2020-Tr74K.si-en.si'
+# dataset_file_path = '/home/rumesh/Downloads/FYP/datasets/common-crawl-si.txt'
 
 def is_sinhala_letter(letter):
     unicode_val = ord(letter)
@@ -53,7 +54,7 @@ def init_complexity(corpus, words_dict):
     for sentence in corpus:
         words = sentence.split()
         for word in words:
-            word = word.replace('\u200d', '')
+            # word = word.replace('\u200d', '')
             if is_sinhala_word(word):
                 # try:
                 #     word = get_base(word)
@@ -78,7 +79,7 @@ def create_orig_to_base_json(lines):
     for sentence in lines:
         words = sentence.split()
         for word in words:
-            word = word.replace('\u200d', '')
+            # word = word.replace('\u200d', '')
             if is_sinhala_word(word):
                 try:
                     base = ws.split(word)['base']
