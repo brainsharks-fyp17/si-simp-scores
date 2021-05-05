@@ -1,3 +1,3 @@
-# nlp-testing
+# Simplification scores
 
-Tests done for FYP17 Layman terms
+Simplification scores FYP17 Layman terms
