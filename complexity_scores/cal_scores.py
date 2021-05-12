@@ -8,6 +8,8 @@ sinhala_start = 3456
 vowels_and_const_end = 3527
 sinhala_end = 3573
 dataset_file_path = '../datasets/parallel-08.11.2020-Tr74K.si-en.si'
+
+
 # dataset_file_path = '/home/rumesh/Downloads/FYP/datasets/common-crawl-si.txt'
 
 def is_sinhala_letter(letter):
@@ -27,6 +29,14 @@ def is_sinhala_word(word):
             if letter_count >= 2:
                 return True
     return False
+
+
+def is_strictly_sinhala_word(word):
+    for ch in word:
+        unicode_val = ord(ch)
+        if not (sinhala_start <= unicode_val <= sinhala_end):
+            return False
+    return True
 
 
 def word_length(word):
