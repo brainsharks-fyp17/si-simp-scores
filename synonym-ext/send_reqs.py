@@ -7,8 +7,10 @@ file_name = 'si_similar_beauti.json'
 resultList = []
 f = open(file_name)
 all_dict = json.load(f)
+f.close()
+f = None
 dict_keys_list = list(all_dict.keys())
-for i in range(1000):
+for i in range(len(dict_keys_list)):
     comp = dict_keys_list[i]
     values = ""
     for j in all_dict[comp]:
@@ -19,4 +21,9 @@ for i in range(1000):
     jsn["v"] = values
     action_item = grequests.post(url, json=jsn)
     resultList.append(action_item)
-print(grequests.map(resultList))
+    if i % 1000 == 0:
+        grequests.map(resultList)
+        resultList = []
+
+if len(resultList) != 0:
+    grequests.map(resultList)
