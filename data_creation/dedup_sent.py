@@ -24,3 +24,20 @@ def is_similar_sent(word1: str, word2: str, length_per=0.8, char_per=0.8):
     word2_set = set([x for x in word2 if is_sinhala_letter(x)])
     inter = len(word1_set.intersection(word2_set))  # intersection
     return inter > len(word1_set) * char_per  # intersection contains more than 80% of the first word
+
+
+if __name__ == '__main__':
+    file = '/home/rumesh/IdeaProjects/python/tokenize/all_data_dedupe_si.txt'
+    similar_pairs = []
+    with open(file) as file_data:
+        lines = file_data.readlines()
+    del file_data
+    for i in lines:
+        i = i.strip()
+        for j in lines:
+            j = j.strip()
+            if i == j:  # strictly equals are removed already
+                continue
+            if is_similar_sent(i, j):
+                similar_pairs.append((i, j))
+    print(len(similar_pairs))
