@@ -8,7 +8,7 @@ if __name__ == '__main__':
     data = file.readlines()
     for line in data:
         line = line.strip()
-        if word_length(line) < 11:
+        if 1 < word_length(line) < 4:
             all_set.add(line)
     lst = list(all_set)
-    create_output_file(output_data=lst, ending="words_filtered")
+    create_output_file(output_data=lst, ending="short_words")

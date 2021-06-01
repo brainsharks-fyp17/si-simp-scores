@@ -52,7 +52,7 @@ def ext_similar_words():
             lst = all_dict[word_base]
             copy_list = list(lst)
             for word in lst:
-                if (word_base[:4] == word[:4]) or (are_lexically_similar(word_base, word, 0.5)):
+                if (word_base[:4] == word[:4]) or (are_lexically_similar(word_base, word, 0.8)):
                     copy_list.remove(word)
             all_dict[word_base] = copy_list
             if len(copy_list) < 1:

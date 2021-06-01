@@ -1,8 +1,8 @@
 import json
+import uuid
 
 import matplotlib.pyplot as plt
 from sinling import word_splitter
-import uuid
 
 sinhala_start = 3456
 vowels_and_const_end = 3527
@@ -39,6 +39,13 @@ def is_strictly_sinhala_word(word):
     return True
 
 
+def are_lexically_similar(word1: str, word2: str, similarity_percentage=0.3):
+    word1_set = set([x for x in word1 if is_sinhala_letter(x)])  # get characters
+    word2_set = set([x for x in word2 if is_sinhala_letter(x)])
+    inter = len(word1_set.intersection(word2_set))  # intersection
+    return inter > len(word1_set) * similarity_percentage  # intersection contains more than 30% of the first word
+
+
 def word_length(word):
     length = 0
     for letter in word:
@@ -58,7 +65,7 @@ def words_in_sentence(sentence):
     return count
 
 
-def init_complexity(corpus, words_dict):
+def init_complexity(corpus: list, words_dict: dict):
     # corpus is a list of sentences
     # words_dict key->word | value->number of occurrences
     for sentence in corpus:
@@ -81,7 +88,7 @@ def get_base(word):
     return word_splitter.split(word)['base']
 
 
-def create_orig_to_base_json(lines):
+def create_orig_to_base_json(lines: list):
     # lines is a list of sentences
     from sinling import word_splitter as ws
     unique_file_name = str(uuid.uuid4()) + ".json"
