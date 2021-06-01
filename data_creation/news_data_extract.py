@@ -1,9 +1,9 @@
+import json
 from os import listdir
 from os.path import isfile, join, isdir
-import json
 
 out_file = "Raw-news-sinhala.txt"
-
+failed_list = "failed.list"
 
 def getAllFilesRecursive(root):
     files = [join(root, f) for f in listdir(root) if isfile(join(root, f))]
@@ -30,4 +30,7 @@ if __name__ == '__main__':
         except Exception:
             failed_files.append(file)
     # out.close()
-    print(failed_files)
+    list_file = open(failed_list,"w")
+    for i in failed_files:
+        list_file.write(i+"\n")
+
