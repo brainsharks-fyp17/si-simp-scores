@@ -3,15 +3,18 @@ from os.path import isfile, join, isdir
 import json
 
 out_file = "Raw-news-sinhala.txt"
+
+
 def getAllFilesRecursive(root):
-    files = [ join(root,f) for f in listdir(root) if isfile(join(root,f))]
-    dirs = [ d for d in listdir(root) if isdir(join(root,d))]
+    files = [join(root, f) for f in listdir(root) if isfile(join(root, f))]
+    dirs = [d for d in listdir(root) if isdir(join(root, d))]
     for d in dirs:
-        files_in_d = getAllFilesRecursive(join(root,d))
+        files_in_d = getAllFilesRecursive(join(root, d))
         if files_in_d:
             for f in files_in_d:
-                files.append(join(root,f))
+                files.append(join(root, f))
     return files
+
 
 if __name__ == '__main__':
     lst = getAllFilesRecursive("/home/rumesh/Downloads/Raw News Collection/Sinhala")
