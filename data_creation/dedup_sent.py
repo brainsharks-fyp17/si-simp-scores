@@ -16,7 +16,7 @@ def is_similar_sent(word1: str, word2: str, length_per=0.8, char_per=0.8):
     """
     lw1 = len(word1)
     lw2 = len(word2)
-    dis_sim = abs(lw1 - lw2) / ((lw1 + lw2) / 2)  # calculate dissimilarity ration of length
+    dis_sim = abs(lw1 - lw2) / ((lw1 + lw2) / 2)  # calculate dissimilarity ratio of length
     # quickly remove sentences of very dissimilar lengths
     if 1 - dis_sim < length_per:
         return False
@@ -31,7 +31,7 @@ if __name__ == '__main__':
     similar_pairs = []
     with open(file) as file_data:
         lines = file_data.readlines()
-    del file_data
+    print("Number of sentences: " + str(len(lines)))
     for i in lines:
         i = i.strip()
         for j in lines:
@@ -41,3 +41,8 @@ if __name__ == '__main__':
             if is_similar_sent(i, j):
                 similar_pairs.append((i, j))
     print(len(similar_pairs))
+    write_file = open("out.txt")
+    for i in similar_pairs:
+        i1, i2 = i[0], i[1]
+        write_file.write(i1 + "\t" + i2 + "\n")
+
