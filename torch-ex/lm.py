@@ -1,6 +1,5 @@
 import linecache
 import os
-from argparse import Namespace
 from typing import List, Text
 
 import nltk
@@ -9,55 +8,60 @@ import pandas as pd
 import sentencepiece as spm
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch import optim
 from torch.utils.data import Dataset, DataLoader
-import torch.nn.functional as F
 from tqdm import tqdm
-from tqdm import tqdm_notebook
 
-args = Namespace(
+
+class args:
     # Data and Path information
-    model_state_file="model.pth",
-    vocab_file="/home/rumesh/Downloads/FYP/sentencepiece-vocabs/m-30000-bpe.model",
-    data_file="/home/rumesh/Downloads/FYP/datasets/15m-tokenized/tokenized_shard_100000.txt",
-    train_data_file="cbow_out_train.tsv",
-    validation_data_file="cbow_out_validation.tsv",
-    test_data_file="cbow_out_test.tsv",
-    save_dir="model_storage/cbow-si",
-    sentence_length=12,
+    model_state_file = "model.pth"
+    vocab_file = "/home/rumesh/Downloads/FYP/sentencepiece-vocabs/m-30000-bpe.model"
+    data_file = "/home/rumesh/Downloads/FYP/datasets/15m-tokenized/tokenized_shard_100000.txt"
+    train_data_file = "cbow_out_train.tsv"
+    validation_data_file = "cbow_out_validation.tsv"
+    test_data_file = "cbow_out_test.tsv"
+    save_dir = "model_storage/cbow-si"
+    sentence_length = 10
     # Model hyper parameters
-    embedding_size=50,
-    hidden_size=300,
+    num_embeddings = 30000
+    embedding_dim = 300
+    rnn_hidden_size = 50
+    output_size = 10
+    dropout_p = 0.3
+    pad_idx = 0
     # Training hyper parameters
-    seed=1337,
-    num_epochs=10,
-    learning_rate=0.0001,
-    batch_size=32,
-    early_stopping_criteria=5,
+    seed = 1337
+    num_epochs = 10
+    learning_rate = 0.0001
+    batch_size = 32
+    early_stopping_criteria = 5
     # Runtime options
-    cuda=False,
-    catch_keyboard_interrupt=True,
-    reload_from_files=False,
-    expand_filepaths_to_save_dir=True
-)
+    cuda = False
+    catch_keyboard_interrupt = True
+    reload_from_files = False
+    expand_filepaths_to_save_dir = True
 
 
 class LanguageModel(nn.Module):
-    def __init__(self, emb_size, hidden_size, output_size, dropout_p, pad_idx):
+    def __init__(self, num_embeddings, embedding_dim, rnn_hidden_size, output_size, dropout_p, pad_idx):
         super(LanguageModel, self).__init__()
-        self.emb_size = emb_size
-        self.hidden_size = hidden_size
+        self.num_embeddings = num_embeddings
+        self.embedding_dim = embedding_dim
+        self.rnn_hidden_size = rnn_hidden_size
         self.output_size = output_size
         self.dropout_p = dropout_p
         self.pad_idx = pad_idx
 
         # num_embeddings = vocabulary size
-        self.embedding = nn.Embedding(num_embeddings=output_size, embedding_dim=hidden_size, padding_idx=self.pad_idx)
+        self.embedding = nn.Embedding(num_embeddings=num_embeddings, embedding_dim=embedding_dim,
+                                      padding_idx=self.pad_idx)
 
-        self.rnn = nn.LSTM(self.emb_size, self.hidden_size, num_layers=2, dropout=dropout_p, batch_first=True)
+        self.rnn = nn.LSTM(self.embedding_dim, self.rnn_hidden_size, num_layers=2, dropout=dropout_p, batch_first=True)
         self.dropout = nn.Dropout(dropout_p)
 
-        self.fc = nn.Linear(hidden_size, self.output_size)
+        self.fc = nn.Linear(rnn_hidden_size, num_embeddings)
 
     def forward(self, x_in, apply_softmax=False):
         embed_out = self.embedding(x_in)
@@ -65,12 +69,18 @@ class LanguageModel(nn.Module):
         out, hidden = self.rnn(embed_out, None)
 
         y_out = self.fc(self.dropout(out))
+
+        # y_out=y_out.view(-1)
+        y_out = y_out.sum(dim=1)
+        # print(y_out.shape)
+
         # loss_func = nn.CrossEntropyLoss(ignore_index=self.pad_idx)
 
         # out = out.view(-1, out.size(-1))
         # tgt_seq = tgt_seq.view(-1)
         #
         # loss = loss_func(out, tgt_seq)
+        # apply_softmax = True
         if apply_softmax:
             y_out = F.softmax(y_out, dim=1)
 
@@ -359,8 +369,10 @@ def train():
     # dataset_test = CBOWDataset(vectorizer=vec, data_file='cbow_out_test.tsv', batch_size=32, sentence_length=12)
     dataset_validation = CBOWDataset(vectorizer=vec, data_file=args.validation_data_file,
                                      sentence_length=args.sentence_length)
-    lang_model = LanguageModel(emb_size=args.embedding_size, hidden_size=args.hidden_size, output_size=args.batch_size,
-                               dropout_p=0.1, pad_idx=0)
+    lang_model = LanguageModel(num_embeddings=args.num_embeddings, embedding_dim=args.embedding_dim,
+                               rnn_hidden_size=args.rnn_hidden_size, output_size=args.output_size,
+                               dropout_p=args.dropout_p, pad_idx=args.pad_idx)
+    print(lang_model)
     lang_model = lang_model.to(args.device)
 
     loss_func = nn.CrossEntropyLoss()
