@@ -11,6 +11,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch import optim
 from torch.utils.data import Dataset, DataLoader
+# from tqdm import tqdm
 from tqdm import tqdm
 
 
@@ -23,19 +24,21 @@ class args:
     validation_data_file = "cbow_out_validation.tsv"
     test_data_file = "cbow_out_test.tsv"
     save_dir = "model_storage/cbow-si"
-    sentence_length = 10
+    window_size = 25
+    sentence_length = 25
     # Model hyper parameters
     num_embeddings = 30000
     embedding_dim = 300
-    rnn_hidden_size = 50
+    rnn_hidden_size = 256
     output_size = 10
-    dropout_p = 0.3
+    lstm_layers = 2
+    dropout_p = 0.5
     pad_idx = 0
     # Training hyper parameters
     seed = 1337
-    num_epochs = 10
-    learning_rate = 0.0001
-    batch_size = 32
+    num_epochs = 25
+    learning_rate = 0.002
+    batch_size = 50
     early_stopping_criteria = 5
     # Runtime options
     cuda = False
@@ -45,20 +48,22 @@ class args:
 
 
 class LanguageModel(nn.Module):
-    def __init__(self, num_embeddings, embedding_dim, rnn_hidden_size, output_size, dropout_p, pad_idx):
+    def __init__(self, num_embeddings, embedding_dim, rnn_hidden_size, lstm_layers, output_size, dropout_p, pad_idx):
         super(LanguageModel, self).__init__()
         self.num_embeddings = num_embeddings
         self.embedding_dim = embedding_dim
         self.rnn_hidden_size = rnn_hidden_size
         self.output_size = output_size
         self.dropout_p = dropout_p
+        self.lstm_layers = lstm_layers
         self.pad_idx = pad_idx
 
         # num_embeddings = vocabulary size
         self.embedding = nn.Embedding(num_embeddings=num_embeddings, embedding_dim=embedding_dim,
                                       padding_idx=self.pad_idx)
 
-        self.rnn = nn.LSTM(self.embedding_dim, self.rnn_hidden_size, num_layers=2, dropout=dropout_p, batch_first=True)
+        self.rnn = nn.LSTM(self.embedding_dim, self.rnn_hidden_size, num_layers=lstm_layers, dropout=dropout_p,
+                           batch_first=True)
         self.dropout = nn.Dropout(dropout_p)
 
         self.fc = nn.Linear(rnn_hidden_size, num_embeddings)
@@ -138,13 +143,17 @@ class Vectorizer:
 
 class CBOWDataset(Dataset):
     def __getitem__(self, index) -> np.array:
-        line = linecache.getline(filename=self.data_file, lineno=index).strip().split("\t")
-        target = int(line[1])
-        label = line[2]
-        lst = line[0].split(" ")
-        lst = [int(i) for i in lst]
-        return {'x_data': self.vectorizer.fill_with_mask(lst, self.sentence_length),
-                'y_target': target}
+        try:
+            line = linecache.getline(filename=self.data_file, lineno=index).strip().split("\t")
+            target = int(line[1])
+            lst = line[0].split(" ")
+            lst = [int(i) for i in lst]
+            return {'x_data': self.vectorizer.fill_with_mask(lst, self.sentence_length),
+                    'y_target': target}
+        except IndexError:
+            print("Index error at", index)
+            return {'x_data': self.vectorizer.fill_with_mask([0, 0, 0, 0], self.sentence_length),
+                    'y_target': 0}
 
     def __init__(self, vectorizer: Vectorizer, data_file, sentence_length):
         self.vectorizer = vectorizer
@@ -255,32 +264,6 @@ def handle_dirs(dirpath):
         os.makedirs(dirpath)
 
 
-if args.expand_filepaths_to_save_dir:
-    # args.vectorizer_file = os.path.join(args.save_dir,
-    #                                     args.vectorizer_file)
-
-    args.model_state_file = os.path.join(args.save_dir,
-                                         args.model_state_file)
-
-    print("Expanded filepaths: ")
-    # print("\t{}".format(args.vectorizer_file))
-    print("\t{}".format(args.model_state_file))
-
-# Check CUDA
-if not torch.cuda.is_available():
-    args.cuda = False
-
-args.device = torch.device("cuda" if args.cuda else "cpu")
-
-print("Using CUDA: {}".format(args.cuda))
-
-# Set seed for reproducibility
-set_seed_everywhere(args.seed, args.cuda)
-
-# handle dirs
-handle_dirs(args.save_dir)
-
-
 def make_train_state(args):
     return {'stop_early': False,
             'early_stopping_step': 0,
@@ -361,19 +344,41 @@ def generate_batches(dataset: Dataset, batch_size: int, shuffle=True,
         yield out_data_dict
 
 
-def train():
-    vocab = Vocabulary(args.vocab_file)
-    vec = Vectorizer(vocab=vocab)
-    dataset_train = CBOWDataset(vectorizer=vec, data_file=args.train_data_file,
-                                sentence_length=args.sentence_length)
-    # dataset_test = CBOWDataset(vectorizer=vec, data_file='cbow_out_test.tsv', batch_size=32, sentence_length=12)
-    dataset_validation = CBOWDataset(vectorizer=vec, data_file=args.validation_data_file,
-                                     sentence_length=args.sentence_length)
-    lang_model = LanguageModel(num_embeddings=args.num_embeddings, embedding_dim=args.embedding_dim,
-                               rnn_hidden_size=args.rnn_hidden_size, output_size=args.output_size,
-                               dropout_p=args.dropout_p, pad_idx=args.pad_idx)
-    print(lang_model)
-    lang_model = lang_model.to(args.device)
+if args.expand_filepaths_to_save_dir:
+    # args.vectorizer_file = os.path.join(args.save_dir,
+    #                                     args.vectorizer_file)
+
+    args.model_state_file = os.path.join(args.save_dir,
+                                         args.model_state_file)
+
+    print("Expanded filepaths: ")
+    # print("\t{}".format(args.vectorizer_file))
+    print("\t{}".format(args.model_state_file))
+# Check CUDA
+if not torch.cuda.is_available():
+    args.cuda = False
+args.device = torch.device("cuda" if args.cuda else "cpu")
+print("Using CUDA: {}".format(args.cuda))
+# Set seed for reproducibility
+set_seed_everywhere(args.seed, args.cuda)
+# handle dirs
+handle_dirs(args.save_dir)
+
+vocab = Vocabulary(args.vocab_file)
+vec = Vectorizer(vocab=vocab)
+dataset_train = CBOWDataset(vectorizer=vec, data_file=args.train_data_file,
+                            sentence_length=args.sentence_length)
+# dataset_test = CBOWDataset(vectorizer=vec, data_file='cbow_out_test.tsv', batch_size=32, sentence_length=12)
+dataset_validation = CBOWDataset(vectorizer=vec, data_file=args.validation_data_file,
+                                 sentence_length=args.sentence_length)
+model = LanguageModel(num_embeddings=args.num_embeddings, embedding_dim=args.embedding_dim,
+                      rnn_hidden_size=args.rnn_hidden_size, output_size=args.output_size,
+                      dropout_p=args.dropout_p, pad_idx=args.pad_idx, lstm_layers=args.lstm_layers)
+print(model)
+
+
+def train(model):
+    lang_model = model.to(args.device)
 
     loss_func = nn.CrossEntropyLoss()
     optimizer = optim.Adam(lang_model.parameters(), lr=args.learning_rate)
@@ -430,7 +435,7 @@ def train():
                 # step 5. use optimizer to take gradient step
                 optimizer.step()
                 # clear the linecache
-                linecache.clearcache()
+                # linecache.clearcache()
                 # -----------------------------------------
                 # compute the accuracy
                 acc_t = compute_accuracy(y_pred, batch_dict['y_target'])
@@ -495,6 +500,7 @@ def create_split_datasets():
     vec = Vectorizer(vocab=vo)
     CBOWDataset.create_cbow_csv(vectorizer=vec,
                                 data_file=args.data_file,
+                                window_size=args.window_size
                                 )
 
 
@@ -506,4 +512,5 @@ if __name__ == '__main__':
     # b1 = next(batch_gen)
     # var = b1['x_data'].shape
     # print(var)
-    train()
+    # train(model)
+    create_split_datasets()
