@@ -6,7 +6,16 @@ from urllib import request
 import wget
 from bs4 import BeautifulSoup
 
-urls = ["http://citizenslanka.org/law-category-si/family-law-si/?lang=si"]
+urls = ["http://citizenslanka.org/law-category-si/family-law-si/?lang=si"
+        "http://citizenslanka.org/laws-of-sri-lanka/?lang=si",
+        "http://citizenslanka.org/law-category-si/labour-law-si/?lang=si",
+        "http://citizenslanka.org/law-category-si/land-law-si/?lang=si",
+        "http://citizenslanka.org/law-category-si/environmental-law-si/?lang=si",
+        "http://citizenslanka.org/law-category-si/human-rights-law-si/?lang=si",
+        "http://citizenslanka.org/law-category-si/language-rights-si/?lang=si",
+        "http://citizenslanka.org/law-category-si/international-law-si/?lang=si",
+        "http://citizenslanka.org/%e0%b6%ba%e0%b7%8f%e0%b7%80%e0%b6%ad%e0%b7%8a%e0%b6%9a%e0%b7%8f%e0%b6%bd%e0%b7%93%e0%b6%b1/sri-lanka-central-bank-annual-report-2017/?lang=si"
+        ]
 save_dir = "./scraped"
 url_list = []
 for url in urls:
