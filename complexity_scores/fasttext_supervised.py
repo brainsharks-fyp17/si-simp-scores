@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import warnings
-
 # from sklearn.externals.joblib as joblib
 import fasttext
 import matplotlib.pyplot as plt
@@ -9,12 +7,11 @@ import pandas as pd
 import seaborn as sn
 from tqdm import tqdm
 
-warnings.filterwarnings("ignore")
-
+# load data frames
 trainSet = pd.read_csv('/content/drive/My Drive/Complete_dataset/models1/train.csv')
 testSet = pd.read_csv('/content/drive/My Drive/Complete_dataset/models1/test.csv')
 
-print(len(list(trainSet['sentence'])))
+print("Training set size:", len(list(trainSet['sentence'])))
 
 sentence_train = list(trainSet['sentence'])
 sentence_test = list(testSet['sentence'])

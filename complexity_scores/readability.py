@@ -23,6 +23,10 @@ pillam = range(pillam_start, pillam_end)
 stop_words = [line.strip() for line in open('stop words.txt').readlines() if not line.isspace()]
 
 
+def is_sinhala_syllable(letter):
+    return vowel_start < ord(letter) < sinhala_end
+
+
 def is_sinhala_letter(letter):
     unicode_val = ord(letter)
     # only Sinhala vowels and constants
