@@ -1,0 +1,12 @@
+[Unit]
+Description=GCP stop
+After=network.service
+
+[Service]
+User=rumesh_m_s16
+WorkingDirectory=/home/rumesh_m_s16
+ExecStart=/usr/bin/python3 /home/rumesh_m_s16/gcp-stop.py
+Restart=always
+
+[Install]
+WantedBy=default.target
