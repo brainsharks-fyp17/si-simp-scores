@@ -1,5 +1,6 @@
 import multiprocessing
 import uuid
+import random
 
 english = "en"
 sinhala = "si"
@@ -41,9 +42,10 @@ def do_pivoting(start, end):
     file.close()
 
 
-n_processes = 5
-N = 10
+n_processes = 13
+N = 5
 pool = multiprocessing.Pool(n_processes)
 chunks = [(i, i + N) for i in range(0, len(source), N)]
-print(chunks)
+random.shuffle(chunks)
+print(chunks[:5])
 pool.starmap(do_pivoting, chunks)
