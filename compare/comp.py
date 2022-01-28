@@ -1,7 +1,7 @@
 orig = 'complex-1000.txt'
-first = "simp1000-piyumika.txt"
+# first = "sim"
 comp = open(orig).readlines()
-simp = open('/home/rumesh/Desktop/simp1000- indumini3.txt').readlines()
+simp = open('simp1000-nimasha2.txt').readlines()
 duplicates = []
 
 
