@@ -15,7 +15,7 @@ project = 'linux-devops-3000'
 zone = 'us-central1-a'
 
 # Name of the instance resource to return.
-instance = '5299992038775316938'
+instance = '1193844115080599548'
 
 url = "https://translate.google.com/?sl=en&tl=si&text=hello&op=translate"
 
